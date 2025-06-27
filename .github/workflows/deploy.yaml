@@ -48,4 +48,4 @@ jobs:
           echo "📦 Container status:"
           docker ps --format "table {{.Names}}\t{{.Status}}\t{{.CreatedAt}}"
           
-          echo "🌐 API available at: http://$(curl -s https://ipinfo.io/ip):8000"
+          echo "🌐 API available at: http://$(curl -s https://ipinfo.io/ip):3000"
