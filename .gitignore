@@ -73,3 +73,23 @@ Thumbs.db
 
 # Logs
 *.log
+
+# GitHub Actions (if you have secrets or sensitive configs)
+.github/secrets/
+
+# Docker
+.dockerignore
+
+# Deployment specific
+deploy.env
+*.pem
+*.key
+!**/id_rsa.pub
+
+# Server specific files
+server/
+deployment/
+
+# Temporary files
+tmp/
+temp/
