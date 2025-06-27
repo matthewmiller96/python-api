@@ -5,11 +5,11 @@ This guide explains how to use the bearer token generation features in your Fast
 ## Overview
 
 The application now includes robust bearer token generation functionality that:
-- ✅ Generates OAuth2 tokens for FedEx, UPS, and USPS
-- ✅ Handles different authentication methods per carrier
-- ✅ Provides comprehensive error handling
-- ✅ Supports batch token generation for multiple carriers
-- ✅ Includes security features (token preview, no full token exposure)
+- Generates OAuth2 tokens for FedEx, UPS, and USPS
+- Handles different authentication methods per carrier
+- Provides comprehensive error handling
+- Supports batch token generation for multiple carriers
+- Includes security features (token preview, no full token exposure)
 
 ## Available Functions
 
@@ -127,10 +127,10 @@ This endpoint now supports an optional `test_tokens` parameter that will test to
 ## Carrier-Specific Implementation Details
 
 ### FedEx Authentication
-- **URL:** `https://apis.fedex.com/oauth/token`
+- **URL:** `https://apis-sandbox.fedex.com/oauth/token`
 - **Method:** OAuth2 Client Credentials
 - **Headers:** `Content-Type: application/x-www-form-urlencoded`
-- **Sandbox URL:** `https://apis-sandbox.fedex.com/oauth/token`
+- **Environment:** Sandbox/Testing
 
 **Request Format:**
 ```
@@ -138,10 +138,10 @@ grant_type=client_credentials&client_id=XXX&client_secret=XXX
 ```
 
 ### UPS Authentication  
-- **URL:** `https://onlinetools.ups.com/security/v1/oauth/token`
+- **URL:** `https://wwwcie.ups.com/security/v1/oauth/authorize`
 - **Method:** OAuth2 with Basic Auth Header
 - **Headers:** `Authorization: Basic [base64(client_id:client_secret)]`
-- **Test URL:** `https://wwwcie.ups.com/security/v1/oauth/token`
+- **Environment:** Testing
 
 **Request Format:**
 ```
@@ -151,10 +151,10 @@ grant_type=client_credentials
 ```
 
 ### USPS Authentication
-- **URL:** `https://api.usps.com/oauth2/v3/token`
+- **URL:** `https://apis-tem.usps.com/oauth2/v3/token`
 - **Method:** OAuth2 Client Credentials (JSON)
 - **Headers:** `Content-Type: application/json`
-- **Test URL:** `https://api-cat.usps.com/oauth2/v3/token`
+- **Environment:** Testing
 
 **Request Format:**
 ```json
@@ -233,25 +233,25 @@ curl -X POST "http://localhost:3000/carriers/tokens" \
 
 ## Production Configuration
 
-### Environment URLs:
-Replace sandbox URLs with production URLs:
+### Testing URLs:
+Update the helper functions to use testing URLs:
 
 ```python
-# Production URLs
-FEDEX_TOKEN_URL = "https://apis.fedex.com/oauth/token"
-UPS_TOKEN_URL = "https://onlinetools.ups.com/security/v1/oauth/token"  
-USPS_TOKEN_URL = "https://api.usps.com/oauth2/v3/token"
+# Testing URLs (currently configured)
+FEDEX_TOKEN_URL = "https://apis-sandbox.fedex.com/oauth/token"
+UPS_TOKEN_URL = "https://wwwcie.ups.com/security/v1/oauth/authorize"  
+USPS_TOKEN_URL = "https://apis-tem.usps.com/oauth2/v3/token"
 ```
 
 ### Environment Variables:
 ```bash
-# Set environment for production
-CARRIER_ENVIRONMENT=production
+# Set environment for testing
+CARRIER_ENVIRONMENT=testing
 
-# Optional: Override URLs
-FEDEX_TOKEN_URL=https://apis.fedex.com/oauth/token
-UPS_TOKEN_URL=https://onlinetools.ups.com/security/v1/oauth/token
-USPS_TOKEN_URL=https://api.usps.com/oauth2/v3/token
+# Testing URLs (currently configured)
+FEDEX_TOKEN_URL=https://apis-sandbox.fedex.com/oauth/token
+UPS_TOKEN_URL=https://wwwcie.ups.com/security/v1/oauth/authorize
+USPS_TOKEN_URL=https://apis-tem.usps.com/oauth2/v3/token
 ```
 
 ## Next Steps

@@ -34,18 +34,18 @@ jobs:
         port: ${{ secrets.SSH_PORT || 22 }}
         script: |
           cd ~/myapp
-          echo "🛑 Stopping existing containers..."
+          echo "Stopping existing containers..."
           docker compose down
           
-          echo "🗑️ Removing old images..."
+          echo "Removing old images..."
           docker compose rm -f
           docker image prune -f
           
-          echo "🔨 Building and starting new containers..."
+          echo "Building and starting new containers..."
           docker compose up -d --build --force-recreate
           
-          echo "🚀 Deployment complete!"
-          echo "📦 Container status:"
+          echo "Deployment complete!"
+          echo "Container status:"
           docker ps --format "table {{.Names}}\t{{.Status}}\t{{.CreatedAt}}"
           
-          echo "🌐 API available at: http://$(curl -s https://ipinfo.io/ip):3000"
+          echo "API available at: http://$(curl -s https://ipinfo.io/ip):3000"

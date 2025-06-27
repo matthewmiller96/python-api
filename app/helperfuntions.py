@@ -33,8 +33,7 @@ def generate_fedex_token(client_id: str, client_secret: str) -> Dict[str, any]:
     
     FedEx uses OAuth2 with client credentials grant type.
     """
-    url = "https://apis.fedex.com/oauth/token"  # Production URL
-    # For testing: "https://apis-sandbox.fedex.com/oauth/token"
+    url = "https://apis-sandbox.fedex.com/oauth/token"  # Sandbox URL
     
     headers = {
         "Content-Type": "application/x-www-form-urlencoded"
@@ -83,8 +82,7 @@ def generate_ups_token(client_id: str, client_secret: str) -> Dict[str, any]:
     
     UPS uses OAuth2 with Basic Authentication header.
     """
-    url = "https://onlinetools.ups.com/security/v1/oauth/token"  # Production URL
-    # For testing: "https://wwwcie.ups.com/security/v1/oauth/token"
+    url = "https://wwwcie.ups.com/security/v1/oauth/authorize"  # Testing URL
     
     # Create Basic Auth header
     credentials = f"{client_id}:{client_secret}"
@@ -136,8 +134,7 @@ def generate_usps_token(client_id: str, client_secret: str) -> Dict[str, any]:
     
     USPS uses OAuth2 with client credentials grant type.
     """
-    url = "https://api.usps.com/oauth2/v3/token"  # Production URL
-    # For testing: "https://api-cat.usps.com/oauth2/v3/token"
+    url = "https://apis-tem.usps.com/oauth2/v3/token"  # Testing URL
     
     headers = {
         "Content-Type": "application/json"
