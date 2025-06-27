@@ -13,7 +13,12 @@ def get_db():
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Shipments API", "docs": "/docs"}
+    return {"message": "Welcome to the Shipments API", 
+            "docs": "/docs"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "service": "shipments-api"}
 
 @app.get("/shipments")
 def get_shipments(db: Session = Depends(get_db)):
