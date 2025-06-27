@@ -11,24 +11,30 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Copy files to server
-      uses: appleboy/scp-action@master
+      uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
-        source: "."
+        port: ${{ secrets.SSH_PORT || 22 }}
+        source: ".,!.git,!.github,!.venv,!__pycache__,!*.pyc,!.DS_Store"
         target: "/home/${{ secrets.SSH_USER }}/myapp"
+        strip_components: 1
+        overwrite: true
 
     - name: Run deploy commands on server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
         script: |
           cd ~/myapp
           docker compose down || true
+          docker compose pull || true
           docker compose up -d --build
+          docker system prune -f
