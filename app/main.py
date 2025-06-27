@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from app.models import SessionLocal, Shipment
 from app.basemodels import carriersSubmission, CarrierCode, shipment
+from app.helperfuntions import generate_tokens_for_carriers, generate_bearer_token
 
 app = FastAPI(title="Shipments API", description="API for managing shipments")
 
@@ -56,15 +57,21 @@ def create_shipment(destination: str, carrier: str, db: Session = Depends(get_db
     return {"message": "Shipment created successfully", "shipment_id": shipment.id}
 
 @app.post("/carriers")
-def configure_carriers(carriers_data: carriersSubmission):
+def configure_carriers(carriers_data: carriersSubmission, test_tokens: bool = False):
     """
     Configure carrier authentication credentials.
     Submit 1-3 carrier configurations (FedEx, UPS, USPS).
+    
+    Args:
+        carriers_data: Carrier configuration data
+        test_tokens: If True, will test token generation for all carriers
     """
     try:
         # In a real application, you would save these to a secure database
         # For now, we'll just validate and return confirmation
         configured_carriers = []
+        token_test_results = None
+        
         for carrier in carriers_data.carriers:
             configured_carriers.append({
                 "carrier": carrier.code.value,
@@ -72,11 +79,24 @@ def configure_carriers(carriers_data: carriersSubmission):
                 "status": "configured"
             })
         
-        return {
+        # Optionally test token generation
+        if test_tokens:
+            token_test_results = generate_tokens_for_carriers(carriers_data)
+        
+        response = {
             "message": "Carrier configurations saved successfully",
             "configured_carriers": configured_carriers,
             "total_carriers": len(configured_carriers)
         }
+        
+        if token_test_results:
+            response["token_test"] = {
+                "successful": token_test_results["successful"],
+                "failed": token_test_results["failed"],
+                "summary": token_test_results["summary"]
+            }
+        
+        return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -90,31 +110,114 @@ def get_supported_carriers():
         "description": "You can configure 1-3 carrier authentication credentials"
     }
 
-@app.post("/shipments/quote")
-def get_shipping_quotes(shipment_data: shipment, carrier_codes: list[CarrierCode] = None):
+@app.post("/carriers/tokens")
+def generate_carrier_tokens(carriers_data: carriersSubmission):
     """
-    Get shipping quotes from configured carriers.
-    If no carrier_codes specified, will check all configured carriers.
+    Generate bearer tokens for configured carriers.
+    This will test the authentication credentials by requesting tokens from each carrier's API.
     """
-    # In a real application, you would use the configured carrier credentials
-    # to get actual quotes from the carrier APIs
-    
-    if carrier_codes is None:
-        carrier_codes = [CarrierCode.FEDEX, CarrierCode.UPS, CarrierCode.USPS]
-    
-    quotes = []
-    for carrier in carrier_codes:
-        # Mock quote - in real implementation, call carrier API
-        quotes.append({
-            "carrier": carrier.value,
-            "service": "Ground",
-            "estimated_cost": f"${(len(shipment_data.name) * 2.5):.2f}",  # Mock calculation
-            "estimated_days": "3-5 business days",
-            "destination": f"{shipment_data.city}, {shipment_data.state}"
-        })
-    
+    try:
+        token_results = generate_tokens_for_carriers(carriers_data)
+        
+        return {
+            "message": f"Token generation completed: {token_results['successful']} successful, {token_results['failed']} failed",
+            "results": token_results,
+            "timestamp": "2025-06-27T12:00:00Z"  # In production, use datetime.utcnow()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Token generation failed: {str(e)}")
+
+@app.post("/carriers/test-token")
+def test_single_carrier_token(carrier_code: CarrierCode, client_id: str, client_secret: str, account_num: str = None):
+    """
+    Test bearer token generation for a single carrier.
+    Useful for testing individual carrier credentials.
+    """
+    try:
+        token_result = generate_bearer_token(carrier_code, client_id, client_secret, account_num)
+        
+        if token_result["success"]:
+            # Don't expose the full token in response for security
+            safe_result = {
+                "carrier": token_result["carrier"],
+                "success": True,
+                "token_type": token_result.get("token_type"),
+                "expires_in": token_result.get("expires_in"),
+                "scope": token_result.get("scope"),
+                "token_preview": token_result.get("access_token", "")[:20] + "..." if token_result.get("access_token") else None
+            }
+        else:
+            safe_result = {
+                "carrier": token_result["carrier"],
+                "success": False,
+                "error": token_result.get("error"),
+                "error_type": token_result.get("error_type")
+            }
+            
+        return {
+            "message": f"Token test for {carrier_code.value} completed",
+            "result": safe_result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Token test failed: {str(e)}")
+
+@app.get("/carriers")
+def get_supported_carriers():
+    """Get list of supported carriers"""
     return {
-        "shipment_destination": f"{shipment_data.city}, {shipment_data.state} {shipment_data.zip}",
-        "quotes": quotes,
-        "total_quotes": len(quotes)
+        "supported_carriers": [code.value for code in CarrierCode],
+        "max_configurations": 3,
+        "min_configurations": 1,
+        "description": "You can configure 1-3 carrier authentication credentials"
     }
+
+@app.post("/carriers/tokens")
+def generate_carrier_tokens(carriers_data: carriersSubmission):
+    """
+    Generate bearer tokens for configured carriers.
+    This will test the authentication credentials by requesting tokens from each carrier's API.
+    """
+    try:
+        token_results = generate_tokens_for_carriers(carriers_data)
+        
+        return {
+            "message": f"Token generation completed: {token_results['successful']} successful, {token_results['failed']} failed",
+            "results": token_results,
+            "timestamp": "2025-06-27T12:00:00Z"  # In production, use datetime.utcnow()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Token generation failed: {str(e)}")
+
+@app.post("/carriers/test-token")
+def test_single_carrier_token(carrier_code: CarrierCode, client_id: str, client_secret: str, account_num: str = None):
+    """
+    Test bearer token generation for a single carrier.
+    Useful for testing individual carrier credentials.
+    """
+    try:
+        token_result = generate_bearer_token(carrier_code, client_id, client_secret, account_num)
+        
+        if token_result["success"]:
+            # Don't expose the full token in response for security
+            safe_result = {
+                "carrier": token_result["carrier"],
+                "success": True,
+                "token_type": token_result.get("token_type"),
+                "expires_in": token_result.get("expires_in"),
+                "scope": token_result.get("scope"),
+                "token_preview": token_result.get("access_token", "")[:20] + "..." if token_result.get("access_token") else None
+            }
+        else:
+            safe_result = {
+                "carrier": token_result["carrier"],
+                "success": False,
+                "error": token_result.get("error"),
+                "error_type": token_result.get("error_type")
+            }
+            
+        return {
+            "message": f"Token test for {carrier_code.value} completed",
+            "result": safe_result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Token test failed: {str(e)}")
