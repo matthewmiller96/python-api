@@ -41,6 +41,9 @@ app.add_middleware(
         "http://127.0.0.1:3003",
         "http://localhost",
         "http://localhost:80",
+        "http://10.0.0.108",        # Your server IP
+        "http://10.0.0.108:80",     # Your server IP with port 80
+        "http://10.0.0.108:3001",   # Your server IP with port 3001
         "*"  # Allow all origins for development - restrict in production
     ],
     allow_credentials=True,

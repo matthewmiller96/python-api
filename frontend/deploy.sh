@@ -3,7 +3,7 @@
 # Shipping API Frontend Deployment Script
 # Usage: ./deploy.sh [server-ip] [user]
 
-SERVER_IP=${1:-"your-server-ip"}
+SERVER_IP=${1:-"10.0.0.108"}
 USER=${2:-"root"}
 
 echo "🚀 Deploying Shipping API Frontend..."

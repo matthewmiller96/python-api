@@ -1,0 +1,47 @@
+# Multi-stage build for complete shipping API platform
+FROM node:18-alpine as frontend-build
+
+# Build frontend
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ ./
+# Set the API URL to the container network
+ENV REACT_APP_API_BASE_URL=http://10.0.0.108:3000
+RUN npm run build
+
+# Python backend stage
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
+COPY app/ ./app/
+
+# Copy frontend build
+COPY --from=frontend-build /frontend/build ./static
+
+# Install nginx to serve frontend
+RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
+
+# Configure nginx
+COPY nginx-container.conf /etc/nginx/sites-available/default
+
+# Create startup script
+COPY start-services.sh /start-services.sh
+RUN chmod +x /start-services.sh
+
+# Expose ports
+EXPOSE 80 3000
+
+# Start both services
+CMD ["/start-services.sh"]
