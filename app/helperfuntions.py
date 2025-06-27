@@ -82,7 +82,7 @@ def generate_ups_token(client_id: str, client_secret: str) -> Dict[str, any]:
     
     UPS uses OAuth2 with Basic Authentication header.
     """
-    url = "https://wwwcie.ups.com/security/v1/oauth/authorize"  # Testing URL
+    url = "https://wwwcie.ups.com/security/v1/oauth/token"  # Testing URL
     
     # Create Basic Auth header
     credentials = f"{client_id}:{client_secret}"

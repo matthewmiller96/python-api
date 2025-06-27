@@ -138,7 +138,7 @@ grant_type=client_credentials&client_id=XXX&client_secret=XXX
 ```
 
 ### UPS Authentication  
-- **URL:** `https://wwwcie.ups.com/security/v1/oauth/authorize`
+- **URL:** `https://wwwcie.ups.com/security/v1/oauth/token`
 - **Method:** OAuth2 with Basic Auth Header
 - **Headers:** `Authorization: Basic [base64(client_id:client_secret)]`
 - **Environment:** Testing
@@ -239,7 +239,7 @@ Update the helper functions to use testing URLs:
 ```python
 # Testing URLs (currently configured)
 FEDEX_TOKEN_URL = "https://apis-sandbox.fedex.com/oauth/token"
-UPS_TOKEN_URL = "https://wwwcie.ups.com/security/v1/oauth/authorize"  
+UPS_TOKEN_URL = "https://wwwcie.ups.com/security/v1/oauth/token"  
 USPS_TOKEN_URL = "https://apis-tem.usps.com/oauth2/v3/token"
 ```
 
@@ -250,7 +250,7 @@ CARRIER_ENVIRONMENT=testing
 
 # Testing URLs (currently configured)
 FEDEX_TOKEN_URL=https://apis-sandbox.fedex.com/oauth/token
-UPS_TOKEN_URL=https://wwwcie.ups.com/security/v1/oauth/authorize
+UPS_TOKEN_URL=https://wwwcie.ups.com/security/v1/oauth/token
 USPS_TOKEN_URL=https://apis-tem.usps.com/oauth2/v3/token
 ```
 
