@@ -16,7 +16,12 @@ git pull
 
 # Stop existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose -f docker-compose.all-in-one.yml down
+docker-compose -f docker-compose.all-in-one.yml down --remove-orphans 2>/dev/null
+
+# Kill any processes using the ports
+echo "🔧 Freeing up ports 80 and 3000..."
+sudo lsof -ti:80 | xargs sudo kill -9 2>/dev/null || true
+sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
 
 # Build and start the complete container
 echo "🔧 Building and starting complete shipping platform..."
