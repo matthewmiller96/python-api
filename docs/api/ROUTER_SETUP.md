@@ -92,7 +92,7 @@ Once you have the internal IP (e.g., `192.168.1.100`), you can access from any d
 ### Testing Internal Access
 ```bash
 # From your server
-./test-connectivity.sh
+../../utils.sh test-connectivity
 
 # From another device on the network
 curl http://[INTERNAL_IP]:3000/
@@ -125,7 +125,7 @@ To allow access from the internet (external networks), you'll need to configure 
 ## Testing
 After configuration, test using:
 ```bash
-./test-connectivity.sh
+../../utils.sh test-connectivity
 ```
 
 Or manually test from another network:

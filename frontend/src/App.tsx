@@ -12,21 +12,21 @@ import Carriers from './pages/Carriers';
 import Shipments from './pages/Shipments';
 import TokenGenerator from './pages/TokenGenerator';
 
-// Create a modern theme
+// Create a modern dark theme
 const theme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: '#90caf9',
+      light: '#bbdefb',
+      dark: '#42a5f5',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#f48fb1',
     },
     background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
+      default: '#121212',
+      paper: '#1e1e1e',
     },
   },
   typography: {

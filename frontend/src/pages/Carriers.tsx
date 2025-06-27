@@ -14,7 +14,6 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
-  Alert,
   CircularProgress,
   Card,
   CardContent,
@@ -35,27 +34,9 @@ import {
 } from '@mui/icons-material';
 import apiService from '../services/apiService';
 import { CarrierCredentials, CarrierCode } from '../types';
-
-const carrierInfo = {
-  FEDEX: {
-    name: 'FedEx',
-    color: '#4d148c',
-    icon: '📦',
-    description: 'FedEx shipping services',
-  },
-  UPS: {
-    name: 'UPS',
-    color: '#8b4513',
-    icon: '🚚',
-    description: 'United Parcel Service',
-  },
-  USPS: {
-    name: 'USPS',
-    color: '#003366',
-    icon: '📮',
-    description: 'United States Postal Service',
-  },
-};
+import { CARRIER_INFO } from '../constants/carriers';
+import { StatusAlert } from '../components/StatusAlert';
+import { PageHeader } from '../components/PageHeader';
 
 const Carriers: React.FC = () => {
   const [carriers, setCarriers] = useState<CarrierCredentials[]>([]);
@@ -145,9 +126,13 @@ const Carriers: React.FC = () => {
         setSuccess('Carrier updated successfully!');
       } else {
         await apiService.createCarrierCredential({
-          ...formData,
+          carrier_code: formData.carrier_code,
+          client_id: formData.client_id,
           client_secret: formData.client_secret,
-        });
+          account_number: formData.account_number,
+          description: formData.description,
+          is_active: formData.is_active,
+        } as any);
         setSuccess('Carrier created successfully!');
       }
       await loadCarriers();
@@ -179,7 +164,7 @@ const Carriers: React.FC = () => {
 
   const getAvailableCarriers = () => {
     const configuredCodes = carriers.map(c => c.carrier_code);
-    return Object.keys(carrierInfo).filter(code => 
+    return Object.keys(CARRIER_INFO).filter(code => 
       editingCarrier?.carrier_code === code || !configuredCodes.includes(code as CarrierCode)
     ) as CarrierCode[];
   };
@@ -194,37 +179,19 @@ const Carriers: React.FC = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Carrier Credentials
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage your shipping carrier API credentials
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => handleOpenDialog()}
-          disabled={getAvailableCarriers().length === 0}
-        >
-          Add Carrier
-        </Button>
-      </Box>
+      <PageHeader
+        title="Carrier Credentials"
+        subtitle="Manage your shipping carrier API credentials"
+        action={{
+          label: 'Add Carrier',
+          icon: <Add />,
+          onClick: () => handleOpenDialog(),
+          disabled: getAvailableCarriers().length === 0,
+        }}
+      />
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess('')}>
-          {success}
-        </Alert>
-      )}
+      <StatusAlert type="error" message={error} onClose={() => setError('')} />
+      <StatusAlert type="success" message={success} onClose={() => setSuccess('')} />
 
       {/* Carriers Grid */}
       <Box sx={{ 
@@ -255,21 +222,25 @@ const Carriers: React.FC = () => {
           </Box>
         ) : (
           carriers.map((carrier) => {
-            const info = carrierInfo[carrier.carrier_code];
+            const info = CARRIER_INFO[carrier.carrier_code];
             return (
               <Card key={carrier.id} sx={{ position: 'relative' }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Box 
                       sx={{ 
-                        fontSize: 24, 
+                        width: 40, 
+                        height: 40,
                         mr: 2,
                         p: 1,
                         borderRadius: 1,
                         bgcolor: `${info.color}20`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {info.icon}
+                      <Business sx={{ color: info.color }} />
                     </Box>
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="h6" component="div">
@@ -357,7 +328,7 @@ const Carriers: React.FC = () => {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <form onSubmit={handleSubmit}>
           <DialogTitle>
-            {editingCarrier ? `Edit ${carrierInfo[editingCarrier.carrier_code].name}` : 'Add New Carrier'}
+            {editingCarrier ? `Edit ${CARRIER_INFO[editingCarrier.carrier_code].name}` : 'Add New Carrier'}
           </DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -372,8 +343,8 @@ const Carriers: React.FC = () => {
                   {getAvailableCarriers().map((code) => (
                     <MenuItem key={code} value={code}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ marginRight: 8 }}>{carrierInfo[code].icon}</span>
-                        {carrierInfo[code].name}
+                        <Business sx={{ mr: 1, color: CARRIER_INFO[code].color }} />
+                        {CARRIER_INFO[code].name}
                       </Box>
                     </MenuItem>
                   ))}

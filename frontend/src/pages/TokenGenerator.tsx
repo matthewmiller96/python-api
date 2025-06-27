@@ -34,12 +34,7 @@ import {
 } from '@mui/icons-material';
 import apiService from '../services/apiService';
 import { CarrierCredentials, TokenResult, CarrierTokenRequest } from '../types';
-
-const carrierInfo = {
-  FEDEX: { name: 'FedEx', color: '#4d148c', icon: '📦' },
-  UPS: { name: 'UPS', color: '#8b4513', icon: '🚚' },
-  USPS: { name: 'USPS', color: '#003366', icon: '📮' },
-};
+import { CARRIER_INFO } from '../constants/carriers';
 
 const TokenGenerator: React.FC = () => {
   const [carriers, setCarriers] = useState<CarrierCredentials[]>([]);
@@ -50,7 +45,7 @@ const TokenGenerator: React.FC = () => {
   const [tokenResults, setTokenResults] = useState<TokenResult[]>([]);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
   const [testFormData, setTestFormData] = useState({
-    carrier_code: 'FEDEX' as keyof typeof carrierInfo,
+    carrier_code: 'FEDEX' as keyof typeof CARRIER_INFO,
     client_id: '',
     client_secret: '',
     account_num: '',
@@ -107,7 +102,7 @@ const TokenGenerator: React.FC = () => {
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to test token generation');
       setTestResult({
-        carrier: testFormData.carrier_code,
+        carrier: testFormData.carrier_code as string,
         success: false,
         error: err.response?.data?.detail || 'Test failed',
       });
@@ -216,7 +211,7 @@ const TokenGenerator: React.FC = () => {
           mb: 4
         }}>
           {carriers.map((carrier) => {
-            const info = carrierInfo[carrier.carrier_code];
+            const info = CARRIER_INFO[carrier.carrier_code];
             const hasResult = tokenResults.find(r => r.carrier === carrier.carrier_code);
             
             return (
@@ -225,14 +220,18 @@ const TokenGenerator: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Box 
                       sx={{ 
-                        fontSize: 24, 
+                        width: 40, 
+                        height: 40,
                         mr: 2,
                         p: 1,
                         borderRadius: 1,
                         bgcolor: `${info.color}20`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {info.icon}
+                      <Token sx={{ color: info.color }} />
                     </Box>
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="h6">{info.name}</Typography>
@@ -292,7 +291,7 @@ const TokenGenerator: React.FC = () => {
                     color={result.success ? 'success' : 'error'}
                     size="small"
                   />
-                  <Typography>{carrierInfo[result.carrier as keyof typeof carrierInfo]?.name} ({result.carrier})</Typography>
+                  <Typography>{CARRIER_INFO[result.carrier as keyof typeof CARRIER_INFO]?.name} ({result.carrier})</Typography>
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
@@ -353,12 +352,12 @@ const TokenGenerator: React.FC = () => {
               <InputLabel>Carrier</InputLabel>
               <Select
                 value={testFormData.carrier_code}
-                onChange={(e) => setTestFormData(prev => ({ ...prev, carrier_code: e.target.value as keyof typeof carrierInfo }))}
+                onChange={(e) => setTestFormData(prev => ({ ...prev, carrier_code: e.target.value as keyof typeof CARRIER_INFO }))}
               >
-                {Object.entries(carrierInfo).map(([code, info]) => (
+                {Object.entries(CARRIER_INFO).map(([code, info]) => (
                   <MenuItem key={code} value={code}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ marginRight: 8 }}>{info.icon}</span>
+                      <Token sx={{ mr: 1, color: info.color }} />
                       {info.name}
                     </Box>
                   </MenuItem>

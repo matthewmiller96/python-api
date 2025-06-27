@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import List
 from app.models import SessionLocal, Shipment, User
 from app.basemodels import carriersSubmission, CarrierCode, shipment
-from app.helperfuntions import generate_tokens_for_carriers, generate_bearer_token
+from app.helperfunctions import generate_tokens_for_carriers, generate_bearer_token
 from app.auth_models import (
     UserCreate, UserLogin, Token, UserProfile, OriginLocation, OriginLocationResponse,
     OriginLocationUpdate, UserCarrierCredentials, UserCarrierCredentialsResponse,

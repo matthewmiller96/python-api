@@ -1,57 +1,53 @@
 import api from './authService';
 import { OriginLocation, CarrierCredentials, Shipment, TokenResult, CarrierTokenRequest } from '../types';
 
-export const locationService = {
-  getLocations: async (): Promise<OriginLocation[]> => {
-    const response = await api.get('/user/locations');
+// Generic CRUD service factory
+const createCrudService = <T>(basePath: string) => ({
+  getAll: async (): Promise<T[]> => {
+    const response = await api.get(basePath);
     return response.data;
   },
 
-  getLocation: async (id: number): Promise<OriginLocation> => {
-    const response = await api.get(`/user/locations/${id}`);
+  getOne: async (id: string | number): Promise<T> => {
+    const response = await api.get(`${basePath}/${id}`);
     return response.data;
   },
 
-  createLocation: async (location: Omit<OriginLocation, 'id' | 'user_id' | 'created_at'>): Promise<OriginLocation> => {
-    const response = await api.post('/user/locations', location);
+  create: async (data: Partial<T>): Promise<T> => {
+    const response = await api.post(basePath, data);
     return response.data;
   },
 
-  updateLocation: async (id: number, location: Partial<Omit<OriginLocation, 'id' | 'user_id' | 'created_at'>>): Promise<OriginLocation> => {
-    const response = await api.put(`/user/locations/${id}`, location);
+  update: async (id: string | number, data: Partial<T>): Promise<T> => {
+    const response = await api.put(`${basePath}/${id}`, data);
     return response.data;
   },
 
-  deleteLocation: async (id: number): Promise<void> => {
-    await api.delete(`/user/locations/${id}`);
+  delete: async (id: string | number): Promise<void> => {
+    await api.delete(`${basePath}/${id}`);
   },
-};
+});
+
+// Specific services
+export const locationService = createCrudService<OriginLocation>('/user/locations');
+export const shipmentService = createCrudService<Shipment>('/shipments');
 
 export const carrierService = {
-  getCarriers: async (): Promise<CarrierCredentials[]> => {
-    const response = await api.get('/user/carriers');
-    return response.data;
-  },
-
-  getCarrier: async (carrierCode: string): Promise<CarrierCredentials> => {
+  ...createCrudService<CarrierCredentials>('/user/carriers'),
+  // Override getOne to use carrier code
+  getOne: async (carrierCode: string): Promise<CarrierCredentials> => {
     const response = await api.get(`/user/carriers/${carrierCode}`);
     return response.data;
   },
-
-  createCarrier: async (carrier: Omit<CarrierCredentials, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'client_secret_masked'> & { client_secret: string }): Promise<CarrierCredentials> => {
-    const response = await api.post('/user/carriers', carrier);
-    return response.data;
-  },
-
-  updateCarrier: async (carrierCode: string, carrier: Partial<Omit<CarrierCredentials, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'client_secret_masked'> & { client_secret?: string }>): Promise<CarrierCredentials> => {
+  // Override update to use carrier code
+  update: async (carrierCode: string, carrier: Partial<CarrierCredentials>): Promise<CarrierCredentials> => {
     const response = await api.put(`/user/carriers/${carrierCode}`, carrier);
     return response.data;
   },
-
-  deleteCarrier: async (carrierCode: string): Promise<void> => {
+  // Override delete to use carrier code
+  delete: async (carrierCode: string): Promise<void> => {
     await api.delete(`/user/carriers/${carrierCode}`);
   },
-
   testTokens: async (): Promise<TokenResult[]> => {
     const response = await api.post('/user/carriers/test-tokens');
     return response.data.results || [];
@@ -70,47 +66,21 @@ export const tokenService = {
   },
 };
 
-export const shipmentService = {
-  getShipments: async (): Promise<Shipment[]> => {
-    const response = await api.get('/shipments');
-    return response.data;
-  },
-
-  createShipment: async (shipment: Omit<Shipment, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Shipment> => {
-    const response = await api.post('/shipments', shipment);
-    return response.data;
-  },
-
-  getShipment: async (id: number): Promise<Shipment> => {
-    const response = await api.get(`/shipments/${id}`);
-    return response.data;
-  },
-
-  updateShipment: async (id: number, shipment: Partial<Omit<Shipment, 'id' | 'user_id' | 'created_at' | 'updated_at'>>): Promise<Shipment> => {
-    const response = await api.put(`/shipments/${id}`, shipment);
-    return response.data;
-  },
-
-  deleteShipment: async (id: number): Promise<void> => {
-    await api.delete(`/shipments/${id}`);
-  },
-};
-
 // Default export with all services
 const apiService = {
   // Origin Locations
-  getOriginLocations: locationService.getLocations,
-  getOriginLocation: locationService.getLocation,
-  createOriginLocation: locationService.createLocation,
-  updateOriginLocation: locationService.updateLocation,
-  deleteOriginLocation: locationService.deleteLocation,
+  getOriginLocations: locationService.getAll,
+  getOriginLocation: locationService.getOne,
+  createOriginLocation: locationService.create,
+  updateOriginLocation: locationService.update,
+  deleteOriginLocation: locationService.delete,
 
   // Carrier Credentials
-  getCarrierCredentials: carrierService.getCarriers,
-  getCarrierCredential: carrierService.getCarrier,
-  createCarrierCredential: carrierService.createCarrier,
-  updateCarrierCredential: carrierService.updateCarrier,
-  deleteCarrierCredential: carrierService.deleteCarrier,
+  getCarrierCredentials: carrierService.getAll,
+  getCarrierCredential: carrierService.getOne,
+  createCarrierCredential: carrierService.create,
+  updateCarrierCredential: carrierService.update,
+  deleteCarrierCredential: carrierService.delete,
   testCarrierTokens: carrierService.testTokens,
 
   // Token Generation
@@ -118,11 +88,11 @@ const apiService = {
   generateTokens: tokenService.generateTokens,
 
   // Shipments
-  getShipments: shipmentService.getShipments,
-  createShipment: shipmentService.createShipment,
-  getShipment: shipmentService.getShipment,
-  updateShipment: shipmentService.updateShipment,
-  deleteShipment: shipmentService.deleteShipment,
+  getShipments: shipmentService.getAll,
+  createShipment: shipmentService.create,
+  getShipment: shipmentService.getOne,
+  updateShipment: shipmentService.update,
+  deleteShipment: shipmentService.delete,
 };
 
 export default apiService;

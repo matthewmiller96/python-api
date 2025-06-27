@@ -1,4 +1,4 @@
-name: Deploy to My Server
+name: Deploy Shipping API
 
 on:
   push:
@@ -20,12 +20,12 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT || 22 }}
-        source: ".,!.git,!.github,!.venv,!__pycache__,!*.pyc,!.DS_Store"
-        target: "/home/${{ secrets.SSH_USER }}/myapp"
+        source: ".,!.git,!.github,!.venv,!__pycache__,!*.pyc,!.DS_Store,!node_modules,!build"
+        target: "/home/${{ secrets.SSH_USER }}/shipping-api"
         strip_components: 1
         overwrite: true
 
-    - name: Run deploy commands on server
+    - name: Deploy on server
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -33,19 +33,22 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT || 22 }}
         script: |
-          cd ~/myapp
-          echo "Stopping existing containers..."
-          docker compose down
-          
-          echo "Removing old images..."
-          docker compose rm -f
-          docker image prune -f
-          
-          echo "Building and starting new containers..."
-          docker compose up -d --build --force-recreate
-          
-          echo "Deployment complete!"
-          echo "Container status:"
-          docker ps --format "table {{.Names}}\t{{.Status}}\t{{.CreatedAt}}"
-          
-          echo "API available at: http://$(curl -s https://ipinfo.io/ip):3000"
+          cd ~/shipping-api
+          chmod +x deploy.sh utils.sh
+          ./deploy.sh production
+
+    - name: Test deployment
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          cd ~/shipping-api
+          sleep 10
+          ./utils.sh test-connectivity
+          echo ""
+          echo "Deployment Summary:"
+          echo "=================="
+          ./utils.sh urls
