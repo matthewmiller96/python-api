@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: RegisterData) => {
     try {
       setIsLoading(true);
-      const response = await authService.register(userData);
+      await authService.register(userData);
       // Auto-login after registration
       await login(userData.username, userData.password);
     } catch (error) {
