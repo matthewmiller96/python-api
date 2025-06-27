@@ -14,7 +14,8 @@ def get_db():
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Shipments API", 
-            "docs": "/docs"}
+            "docs": "/docs",
+            "health": "/health"}
 
 @app.get("/health")
 def health_check():

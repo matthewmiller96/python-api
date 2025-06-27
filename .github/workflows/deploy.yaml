@@ -7,20 +7,34 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted  # Changed from ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy locally
-      run: |
-        # Deploy directly on the local network
-        cd ~/myapp || mkdir -p ~/myapp && cd ~/myapp
-        
-        # Copy files
-        rsync -av --exclude='.git' --exclude='.github' --exclude='.venv' --exclude='__pycache__' ${{ github.workspace }}/ ./
-        
-        # Deploy with Docker
-        docker compose down || true
-        docker compose up -d --build
+    - name: Copy files to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        source: ".,!.git,!.github,!.venv,!__pycache__,!*.pyc,!.DS_Store"
+        target: "/home/${{ secrets.SSH_USER }}/myapp"
+        strip_components: 1
+        overwrite: true
+
+    - name: Run deploy commands on server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          cd ~/myapp
+          docker compose down || true
+          docker compose up -d --build
+          echo "🚀 Deployment complete!"
+          echo "API available at: http://$(curl -s https://ipinfo.io/ip):8000"
