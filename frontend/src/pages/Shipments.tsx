@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Button,
   Alert,
@@ -19,7 +18,7 @@ import apiService from '../services/apiService';
 import { Shipment } from '../types';
 
 const Shipments: React.FC = () => {
-  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
