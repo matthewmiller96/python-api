@@ -5,8 +5,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from app.models import SessionLocal, User
-from app.auth_models import TokenData
+from app.core.database import SessionLocal
+from app.models.user import User
+# Define TokenData here if app.auth_models does not exist
+from pydantic import BaseModel
+
+class TokenData(BaseModel):
+    username: str | None = None
 
 # Configuration
 SECRET_KEY = "your-secret-key-here-change-in-production"  # Change this in production!

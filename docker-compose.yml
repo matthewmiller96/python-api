@@ -1,46 +1,21 @@
 services:
-  api:
-    build: 
-      context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile}
-    ports:
-      - "${API_PORT:-3000}:8000"
-    volumes:
-      - .:/app
-      - ./shipments.db:/app/shipments.db
-    working_dir: /app
-    command: ${API_COMMAND:-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload}
-    environment:
-      - ENV=${ENV:-development}
-    restart: ${RESTART_POLICY:-no}
-    profiles:
-      - api
-      - full
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "${FRONTEND_PORT:-80}:80"
-    depends_on:
-      - api
-    restart: ${RESTART_POLICY:-no}
-    profiles:
-      - frontend
-      - full
-
-  # All-in-one service (alternative to api + frontend)
-  all-in-one:
+  # Unified application (Frontend + Backend + Nginx)
+  app:
     build:
       context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile.all-in-one}
+      dockerfile: Dockerfile.unified
     ports:
-      - "${FRONTEND_PORT:-80}:80"
-      - "${API_PORT:-3000}:3000"
-    restart: ${RESTART_POLICY:-unless-stopped}
+      - "${PORT:-8080}:80"
     environment:
-      - ENV=${ENV:-production}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./shipments.db}
+      - SECRET_KEY=${SECRET_KEY:-change-in-production}
+      - DEBUG=${DEBUG:-false}
     volumes:
       - ./shipments.db:/app/shipments.db
-    container_name: shipping-api-container
-    profiles:
-      - all-in-one
+    restart: unless-stopped
+    container_name: shipments-unified
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

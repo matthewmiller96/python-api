@@ -4,19 +4,24 @@ A comprehensive FastAPI-based shipping management system with React frontend.
 
 ## Quick Start
 
-### Development
+### Unified Docker Deployment (Recommended)
 ```bash
-./deploy.sh development
+# Build and run the unified container (Frontend + Backend + Nginx)
+docker build -f Dockerfile.unified -t shipments-unified .
+docker run -d --name shipments-app -p 8080:80 shipments-unified
+
+# Check status
+docker logs shipments-app
+
+# Access the application
+open http://localhost:8080
 ```
 
-### Production
+### Legacy Deployment Options
 ```bash
-./deploy.sh production
-```
-
-### All-in-One Deployment
-```bash
-./deploy.sh all-in-one
+./deploy.sh development    # API only
+./deploy.sh production     # Separate frontend/backend containers
+./deploy.sh all-in-one     # Legacy all-in-one container
 ```
 
 ## Utilities
@@ -59,22 +64,13 @@ Use the utilities script for testing and management:
 
 ## Documentation
 
-### 📚 Deployment
-- [Deployment Guide](docs/deployment/DEPLOYMENT.md) - Main deployment instructions
-- [Frontend Deployment](docs/deployment/FRONTEND_DEPLOYMENT.md) - Frontend-specific deployment
-- [Container Deployment](docs/deployment/CONTAINER_DEPLOYMENT.md) - Docker container details
+### � Docker Deployment
+- **[Docker Deployment Guide](DOCKER_DEPLOYMENT_GUIDE.md)** - Complete Docker deployment guide with unified container
 
-### 🔐 Authentication
-- [Authentication Quick Start](docs/authentication/AUTHENTICATION_QUICK_START.md) - Get started with auth
-- [Bearer Token Guide](docs/authentication/BEARER_TOKEN_GUIDE.md) - Working with bearer tokens
-- [User Auth Guide](docs/authentication/USER_AUTH_GUIDE.md) - User authentication system
-
-### 🚀 API
-- [Carrier API Examples](docs/api/CARRIER_API_EXAMPLES.md) - Carrier integration examples
-- [Router Setup](docs/api/ROUTER_SETUP.md) - API routing configuration
-
-### 🛠️ Development
-- [Script Consolidation Summary](docs/development/SCRIPT_CONSOLIDATION_SUMMARY.md) - Recent improvements
+### � Additional Documentation
+- [API Documentation](docs/api/) - API examples and routing
+- [Authentication Guides](docs/authentication/) - Authentication system
+- [Development Notes](docs/development/) - Development workflows
 
 ## API Endpoints
 
@@ -106,12 +102,16 @@ The project supports three deployment environments:
 
 ## Access URLs
 
-After deployment, your services will be available at:
+### Unified Container (Recommended)
+After running the unified container:
+- **Application**: `http://localhost:8080/` (Frontend + API)
+- **API Docs**: `http://localhost:8080/api/docs`
+- **Health Check**: `http://localhost:8080/health`
 
-- **Frontend**: `http://localhost/` (production/all-in-one)
+### Legacy Deployment URLs
+- **Frontend**: `http://localhost/` (production)
 - **API**: `http://localhost:3000/`
 - **API Docs**: `http://localhost:3000/docs`
-- **Health Check**: `http://localhost:3000/health`
 
 Run `./utils.sh urls` to see all available URLs including network access.
 

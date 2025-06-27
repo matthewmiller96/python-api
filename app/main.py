@@ -4,30 +4,40 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import List
-from app.models import SessionLocal, Shipment, User
-from app.basemodels import carriersSubmission, CarrierCode, shipment
-from app.helperfunctions import generate_tokens_for_carriers, generate_bearer_token
-from app.auth_models import (
+from app.core.auth import (
+    get_current_active_user, authenticate_user, create_access_token,
+    create_user, get_password_hash, verify_password, ACCESS_TOKEN_EXPIRE_MINUTES
+)
+from app.core.auth_models import (
     UserCreate, UserLogin, Token, UserProfile, OriginLocation, OriginLocationResponse,
     OriginLocationUpdate, UserCarrierCredentials, UserCarrierCredentialsResponse,
     UserCarrierCredentialsUpdate, UpdatePassword
 )
-from app.auth import (
-    get_current_active_user, authenticate_user, create_access_token,
-    create_user, get_password_hash, verify_password, ACCESS_TOKEN_EXPIRE_MINUTES
-)
-from app.user_service import (
+from app.core.database import SessionLocal, get_db, create_tables
+from app.core.enums import CarrierCode
+from app.schemas import CarriersSubmission
+from app.models.user import User
+from app.models.shipment import Shipment
+from app.services.user_service import (
     get_user_origin_locations, get_user_origin_location, create_origin_location,
     update_origin_location, delete_origin_location, get_user_carrier_credentials,
     get_user_carrier_credential, create_carrier_credentials, update_carrier_credentials,
     delete_carrier_credentials, get_user_active_carriers, mask_secret
 )
+from app.core.utils import generate_tokens_for_carriers, generate_bearer_token
+from app.core.health import get_health_status
+from app.core.init import init_app
 
 app = FastAPI(
     title="Shipments API", 
     description="API for managing shipments with user authentication",
     version="2.0.0"
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the application on startup."""
+    init_app()
 
 # Add CORS middleware
 app.add_middleware(
@@ -51,12 +61,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Database dependency is now imported from core.database
 
 @app.get("/")
 def read_root(request: Request):
@@ -93,7 +98,7 @@ def read_root(request: Request):
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "shipments-api", "version": "2.0.0"}
+    return get_health_status()
 
 # ==========================================
 # AUTHENTICATION ENDPOINTS
@@ -423,7 +428,7 @@ def test_user_carrier_tokens(
 
 
 @app.post("/carriers/tokens")
-def generate_carrier_tokens(carriers_data: carriersSubmission):
+def generate_carrier_tokens(carriers_data: CarriersSubmission):
     """
     Generate bearer tokens for configured carriers.
     This will test the authentication credentials by requesting tokens from each carrier's API.

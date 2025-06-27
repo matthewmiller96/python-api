@@ -1,7 +1,8 @@
 from pydantic import BaseModel, validator, Field, EmailStr
 from typing import Optional, List
 from enum import Enum
-from app.basemodels import CarrierCode, shipment
+from app.core.enums import CarrierCode
+from app.schemas import ShipmentRequest
 
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
@@ -86,7 +87,7 @@ class UserCarrierCredentialsUpdate(BaseModel):
 
 class UserShipmentRequest(BaseModel):
     origin_location_id: Optional[int] = None  # If None, use default location
-    destination: shipment
+    destination: ShipmentRequest
     carrier_preference: Optional[List[CarrierCode]] = None  # If None, use all configured carriers
     service_type: Optional[str] = "GROUND"
     

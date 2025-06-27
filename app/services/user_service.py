@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from fastapi import HTTPException, status
 from app.models import User, OriginLocation, CarrierCredentials, UserShipment
-from app.auth_models import (
+from app.core.auth_models import (
     OriginLocation as OriginLocationSchema,
     OriginLocationUpdate,
     UserCarrierCredentials,
     UserCarrierCredentialsUpdate
 )
-from app.basemodels import CarrierCode
+from app.core.enums import CarrierCode
 import json
 from datetime import datetime
 
