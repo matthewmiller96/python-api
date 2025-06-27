@@ -18,7 +18,7 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "shipments-api"}
+    return {"status": "healthy", "service": "shipments-api", "version": "1.0.1"}
 
 @app.get("/shipments")
 def get_shipments(db: Session = Depends(get_db)):
