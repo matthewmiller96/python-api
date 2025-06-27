@@ -63,6 +63,65 @@ Or check in your router's DHCP client list.
 ### D-Link
 - Advanced → Port Forwarding
 
+## Internal Network Access
+
+Your FastAPI application should already be accessible from any device on your local network without port forwarding. Here's how to access it:
+
+### Find Your Server's Internal IP
+1. **On your server, run:**
+   ```bash
+   hostname -I | cut -d' ' -f1
+   ```
+   Or:
+   ```bash
+   ip route get 1 | awk '{print $NF;exit}'
+   ```
+
+2. **From your router's admin panel:**
+   - Look for "Connected Devices" or "DHCP Client List"
+   - Find your server in the list
+
+### Access URLs
+Once you have the internal IP (e.g., `192.168.1.100`), you can access from any device on your network:
+
+- **Main API:** `http://192.168.1.100:3000/`
+- **Interactive Docs:** `http://192.168.1.100:3000/docs`
+- **Health Check:** `http://192.168.1.100:3000/health`
+- **Shipments:** `http://192.168.1.100:3000/shipments`
+
+### Testing Internal Access
+```bash
+# From your server
+./test-connectivity.sh
+
+# From another device on the network
+curl http://[INTERNAL_IP]:3000/
+```
+
+### Common Internal Access Issues
+
+1. **Firewall blocking connections:**
+   ```bash
+   # Allow port 3000 through firewall
+   sudo ufw allow 3000
+   
+   # Or temporarily disable firewall for testing
+   sudo ufw disable
+   ```
+
+2. **Docker not binding to all interfaces:**
+   - This is already configured correctly in your setup
+   - The `--host 0.0.0.0` ensures binding to all network interfaces
+
+3. **Network isolation:**
+   - Some routers have client isolation enabled
+   - Check router settings for "AP Isolation" or "Client Isolation"
+   - Disable this feature if enabled
+
+## External Network Access
+
+To allow access from the internet (external networks), you'll need to configure port forwarding:
+
 ## Testing
 After configuration, test using:
 ```bash

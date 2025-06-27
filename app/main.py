@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from sqlalchemy.orm import Session
 from app.models import SessionLocal, Shipment
 
@@ -12,10 +12,21 @@ def get_db():
         db.close()
 
 @app.get("/")
-def read_root():
-    return {"message": "Welcome to the Shipments API", 
-            "docs": "/docs",
-            "health": "/health"}
+def read_root(request: Request):
+    base_url = str(request.url).rstrip('/')
+    return {
+        "message": "Welcome to the Shipments API", 
+        "version": "1.0.1",
+        "endpoints": {
+            "docs": f"{base_url}/docs",
+            "health": f"{base_url}/health",
+            "shipments": f"{base_url}/shipments"
+        },
+        "access_info": {
+            "local": "http://localhost:3000/",
+            "network_note": "Access from other devices using your server's IP address on port 3000"
+        }
+    }
 
 @app.get("/health")
 def health_check():

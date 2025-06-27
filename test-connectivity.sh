@@ -19,6 +19,12 @@ echo "🏢 Testing internal network access..."
 echo "📍 Internal IP: $INTERNAL_IP"
 curl -s http://$INTERNAL_IP:3000/ && echo "✅ Internal network access works" || echo "❌ Internal network access failed"
 
+echo ""
+echo "📱 Internal Network Access URLs:"
+echo "- From any device on your network: http://$INTERNAL_IP:3000/"
+echo "- API documentation: http://$INTERNAL_IP:3000/docs"
+echo "- Health check: http://$INTERNAL_IP:3000/health"
+
 # Test external access
 echo ""
 echo "🌐 Testing external access..."
